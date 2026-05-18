@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>2048</title>
+    <link rel="stylesheet" href="2048.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="game-shell" aria-label="2048 게임">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Number Puzzle</p>
+            <h1>2048</h1>
+          </div>
+          <div class="score-row" aria-label="점수">
+            <div class="score-card">
+              <span>점수</span>
+              <strong id="score">0</strong>
+            </div>
+            <div class="score-card">
+              <span>최고</span>
+              <strong id="bestScore">0</strong>
+            </div>
+          </div>
+        </header>
+
+        <div class="board-section">
+          <div class="board-wrap">
+            <div id="board" class="board" role="application" aria-label="2048 보드" tabindex="0">
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+            </div>
+            <div id="overlay" class="overlay is-hidden" aria-live="polite">
+              <div class="overlay-panel">
+                <p id="overlayKicker">완료</p>
+                <h2 id="overlayTitle">2048</h2>
+                <div class="overlay-actions">
+                  <button id="keepGoingButton" type="button">계속하기</button>
+                  <button id="overlayNewButton" type="button">새 게임</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <aside class="side-panel" aria-label="게임 제어">
+            <div class="target-card">
+              <span>목표</span>
+              <strong id="targetTile">2048</strong>
+            </div>
+            <div class="button-grid">
+              <button id="newGameButton" type="button" title="새 게임" aria-label="새 게임">
+                <span aria-hidden="true">↻</span>
+              </button>
+              <button id="undoButton" type="button" title="되돌리기" aria-label="되돌리기">
+                <span aria-hidden="true">↶</span>
+              </button>
+              <button id="soundButton" type="button" title="소리 끄기" aria-label="소리 끄기">
+                <span aria-hidden="true">♪</span>
+              </button>
+            </div>
+            <div class="direction-pad" aria-label="이동 버튼">
+              <button type="button" data-direction="up" title="위로 이동" aria-label="위로 이동">
+                <span aria-hidden="true">↑</span>
+              </button>
+              <button type="button" data-direction="left" title="왼쪽으로 이동" aria-label="왼쪽으로 이동">
+                <span aria-hidden="true">←</span>
+              </button>
+              <button type="button" data-direction="down" title="아래로 이동" aria-label="아래로 이동">
+                <span aria-hidden="true">↓</span>
+              </button>
+              <button type="button" data-direction="right" title="오른쪽으로 이동" aria-label="오른쪽으로 이동">
+                <span aria-hidden="true">→</span>
+              </button>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <script src="2048.js"></script>
+  </body>
+</html>
