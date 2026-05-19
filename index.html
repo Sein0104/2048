@@ -3,74 +3,96 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>수박게임</title>
-    <link rel="stylesheet" href="styles.css" />
+    <title>2048</title>
+    <link rel="stylesheet" href="2048.css" />
   </head>
   <body>
     <main class="app-shell">
-      <section class="game-panel" aria-label="수박게임">
-        <div class="game-topbar">
+      <section class="game-shell" aria-label="2048 게임">
+        <header class="topbar">
           <div>
-            <p class="eyebrow">Watermelon Game</p>
-            <h1>수박게임</h1>
+            <p class="eyebrow">Number Puzzle</p>
+            <h1>2048</h1>
           </div>
-          <div class="stat-row" aria-label="점수 정보">
-            <div class="stat">
+          <div class="score-row" aria-label="점수">
+            <div class="score-card">
               <span>점수</span>
               <strong id="score">0</strong>
             </div>
-            <div class="stat">
+            <div class="score-card">
               <span>최고</span>
               <strong id="bestScore">0</strong>
             </div>
           </div>
-        </div>
+        </header>
 
-        <div class="play-layout">
+        <div class="board-section">
           <div class="board-wrap">
-            <canvas
-              id="gameCanvas"
-              width="420"
-              height="640"
-              aria-label="수박게임 보드"
-            ></canvas>
-            <div id="gameOverlay" class="game-overlay is-hidden" role="dialog" aria-live="polite">
-              <div>
-                <p id="overlayKicker">게임 오버</p>
-                <h2 id="overlayTitle">과일이 넘쳤어요</h2>
-                <button id="overlayRestart" type="button">다시 시작</button>
+            <div id="board" class="board" role="application" aria-label="2048 보드" tabindex="0">
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+              <div class="cell"></div>
+            </div>
+            <div id="overlay" class="overlay is-hidden" aria-live="polite">
+              <div class="overlay-panel">
+                <p id="overlayKicker">완료</p>
+                <h2 id="overlayTitle">2048</h2>
+                <div class="overlay-actions">
+                  <button id="keepGoingButton" type="button">계속하기</button>
+                  <button id="overlayNewButton" type="button">새 게임</button>
+                </div>
               </div>
             </div>
           </div>
 
-          <aside class="side-panel" aria-label="게임 상태와 조작">
-            <div class="next-card">
-              <span>다음 과일</span>
-              <canvas id="nextCanvas" width="120" height="120" aria-label="다음 과일 미리보기"></canvas>
+          <aside class="side-panel" aria-label="게임 제어">
+            <div class="target-card">
+              <span>목표</span>
+              <strong id="targetTile">2048</strong>
             </div>
-
-            <div class="controls">
-              <button id="restartButton" type="button" title="다시 시작" aria-label="다시 시작">
+            <div class="button-grid">
+              <button id="newGameButton" type="button" title="새 게임" aria-label="새 게임">
                 <span aria-hidden="true">↻</span>
               </button>
-              <button id="pauseButton" type="button" title="일시정지" aria-label="일시정지">
-                <span aria-hidden="true">Ⅱ</span>
+              <button id="undoButton" type="button" title="되돌리기" aria-label="되돌리기">
+                <span aria-hidden="true">↶</span>
               </button>
-              <button id="muteButton" type="button" title="소리 끄기" aria-label="소리 끄기">
+              <button id="soundButton" type="button" title="소리 끄기" aria-label="소리 끄기">
                 <span aria-hidden="true">♪</span>
               </button>
             </div>
-
-            <div class="hint-list">
-              <p>마우스나 손가락으로 위치를 잡고 클릭해서 떨어뜨려요.</p>
-              <p>← → 이동, Space 또는 Enter로 떨어뜨릴 수 있어요.</p>
+            <div class="direction-pad" aria-label="이동 버튼">
+              <button type="button" data-direction="up" title="위로 이동" aria-label="위로 이동">
+                <span aria-hidden="true">↑</span>
+              </button>
+              <button type="button" data-direction="left" title="왼쪽으로 이동" aria-label="왼쪽으로 이동">
+                <span aria-hidden="true">←</span>
+              </button>
+              <button type="button" data-direction="down" title="아래로 이동" aria-label="아래로 이동">
+                <span aria-hidden="true">↓</span>
+              </button>
+              <button type="button" data-direction="right" title="오른쪽으로 이동" aria-label="오른쪽으로 이동">
+                <span aria-hidden="true">→</span>
+              </button>
             </div>
           </aside>
         </div>
       </section>
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
-    <script src="game.js"></script>
+    <script src="2048.js"></script>
   </body>
 </html>
