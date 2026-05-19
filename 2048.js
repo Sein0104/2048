@@ -13,10 +13,23 @@
   const overlayKicker = document.getElementById("overlayKicker");
   const overlayTitle = document.getElementById("overlayTitle");
   const targetTileEl = document.getElementById("targetTile");
+  const leaderboardButton = document.getElementById("leaderboardButton");
+  const leaderboardPreviewEl = document.getElementById("leaderboardPreview");
+  const leaderboardModal = document.getElementById("leaderboardModal");
+  const leaderboardListEl = document.getElementById("leaderboardList");
+  const leaderboardCloseButton = document.getElementById("leaderboardCloseButton");
+  const scoreForm = document.getElementById("scoreForm");
+  const nicknameInput = document.getElementById("nicknameInput");
+  const scoreSaveMessage = document.getElementById("scoreSaveMessage");
 
   const SIZE = 4;
   const WIN_TILE = 2048;
   const BEST_KEY = "number-2048-best";
+  const LAST_NICKNAME_KEY = "number-2048-nickname";
+  const MAX_LEADERBOARD = 20;
+  const SUPABASE_URL = "https://amnyhffrahhhhkkmxlyz.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_2GiPowPflYOik2Sb9ZdMzQ_CCHC-CaX";
+  const SCORES_TABLE = "scores";
 
   const state = {
     grid: createEmptyGrid(),
@@ -27,6 +40,11 @@
     won: false,
     gameOver: false,
     keepGoing: false,
+    scoreSaved: false,
+    startedAt: Date.now(),
+    leaderboard: [],
+    leaderboardStatus: "idle",
+    leaderboardError: "",
     muted: false,
     touchStart: null,
     blockedTimer: 0,
@@ -50,7 +68,10 @@
     state.won = false;
     state.gameOver = false;
     state.keepGoing = false;
+    state.scoreSaved = false;
+    state.startedAt = Date.now();
     state.tileId += 1;
+    scoreSaveMessage.textContent = "";
     hideOverlay();
     addRandomTile();
     addRandomTile();
@@ -276,6 +297,7 @@
     bestScoreEl.textContent = state.best.toString();
     undoButton.disabled = !state.previous;
     targetTileEl.textContent = getTargetTile().toString();
+    renderLeaderboardPreview();
 
     const boardRect = boardEl.getBoundingClientRect();
     const styles = window.getComputedStyle(boardEl);
@@ -328,9 +350,13 @@
   }
 
   function getTargetTile() {
-    const maxTile = Math.max(...state.grid.flat().map((tile) => tile?.value || 0));
+    const maxTile = getMaxTile();
     if (maxTile < WIN_TILE) return WIN_TILE;
     return maxTile * 2;
+  }
+
+  function getMaxTile() {
+    return Math.max(...state.grid.flat().map((tile) => tile?.value || 0));
   }
 
   function showOverlay(kicker, title) {
@@ -338,6 +364,16 @@
     overlayTitle.textContent = title;
     overlay.classList.remove("is-hidden");
     keepGoingButton.hidden = state.gameOver;
+    scoreForm.hidden = !state.gameOver || state.scoreSaved;
+    scoreSaveMessage.textContent = "";
+
+    if (state.gameOver && !state.scoreSaved) {
+      nicknameInput.value = localStorage.getItem(LAST_NICKNAME_KEY) || "";
+      window.setTimeout(() => {
+        nicknameInput.focus();
+        nicknameInput.select();
+      }, 0);
+    }
   }
 
   function hideOverlay() {
@@ -349,6 +385,219 @@
     hideOverlay();
     render();
     boardEl.focus({ preventScroll: true });
+  }
+
+  function getSupabaseHeaders(extraHeaders = {}) {
+    return {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      ...extraHeaders,
+    };
+  }
+
+  async function fetchLeaderboard() {
+    state.leaderboardStatus = "loading";
+    state.leaderboardError = "";
+    renderLeaderboardPreview();
+    renderLeaderboardList();
+
+    try {
+      const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/${SCORES_TABLE}?select=id,nickname,score,max_tile,duration_ms,created_at&order=score.desc,max_tile.desc,duration_ms.asc,created_at.asc&limit=${MAX_LEADERBOARD}`,
+        {
+          headers: getSupabaseHeaders(),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const rows = await response.json();
+      state.leaderboard = rows.map(normalizeScoreRow);
+      state.leaderboardStatus = "ready";
+    } catch (error) {
+      state.leaderboard = [];
+      state.leaderboardStatus = "error";
+      state.leaderboardError = error instanceof Error ? error.message : "Unknown error";
+    }
+
+    renderLeaderboardPreview();
+    renderLeaderboardList();
+  }
+
+  async function submitScore(event) {
+    event.preventDefault();
+    if (!state.gameOver || state.scoreSaved) return;
+
+    const nickname = normalizeNickname(nicknameInput.value);
+    if (!nickname) {
+      scoreSaveMessage.textContent = "닉네임을 입력해줘.";
+      nicknameInput.focus();
+      return;
+    }
+
+    const submitButton = scoreForm.querySelector("button[type='submit']");
+    submitButton.disabled = true;
+    scoreSaveMessage.textContent = "공용 순위에 저장 중...";
+
+    const entry = {
+      nickname,
+      score: state.score,
+      max_tile: getMaxTile(),
+      duration_ms: Date.now() - state.startedAt,
+    };
+
+    try {
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/${SCORES_TABLE}`, {
+        method: "POST",
+        headers: getSupabaseHeaders({
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        }),
+        body: JSON.stringify(entry),
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      localStorage.setItem(LAST_NICKNAME_KEY, nickname);
+      state.scoreSaved = true;
+      scoreForm.hidden = true;
+      scoreSaveMessage.textContent = "공용 순위에 등록했어.";
+      await fetchLeaderboard();
+    } catch (error) {
+      console.error("Failed to submit score", error);
+      scoreSaveMessage.textContent = "저장 실패: Supabase 테이블과 RLS 정책을 확인해줘.";
+    } finally {
+      submitButton.disabled = false;
+    }
+  }
+
+  function normalizeNickname(value) {
+    return value.trim().replace(/\s+/g, " ").slice(0, 12);
+  }
+
+  function normalizeScoreRow(row) {
+    return {
+      id: row.id,
+      name: row.nickname,
+      score: Number(row.score) || 0,
+      maxTile: Number(row.max_tile) || 0,
+      durationMs: Number(row.duration_ms) || 0,
+      createdAt: row.created_at,
+    };
+  }
+
+  function renderLeaderboardPreview() {
+    const entries = state.leaderboard.slice(0, 3);
+    leaderboardPreviewEl.innerHTML = "";
+
+    if (state.leaderboardStatus === "loading") {
+      leaderboardPreviewEl.append(createEmptyRankItem("순위를 불러오는 중..."));
+      return;
+    }
+
+    if (state.leaderboardStatus === "error") {
+      leaderboardPreviewEl.append(createEmptyRankItem("DB 연결을 확인해줘."));
+      return;
+    }
+
+    if (!entries.length) {
+      leaderboardPreviewEl.append(createEmptyRankItem("아직 기록이 없어."));
+      return;
+    }
+
+    entries.forEach((entry, index) => {
+      leaderboardPreviewEl.append(createRankItem(entry, index, false));
+    });
+  }
+
+  function renderLeaderboardList() {
+    const entries = state.leaderboard;
+    leaderboardListEl.innerHTML = "";
+
+    if (state.leaderboardStatus === "loading") {
+      leaderboardListEl.append(createEmptyRankItem("순위를 불러오는 중..."));
+      return;
+    }
+
+    if (state.leaderboardStatus === "error") {
+      leaderboardListEl.append(createEmptyRankItem("DB 연결 실패. Supabase의 scores 테이블과 RLS 정책을 확인해줘."));
+      return;
+    }
+
+    if (!entries.length) {
+      leaderboardListEl.append(createEmptyRankItem("게임오버 후 닉네임을 등록하면 순위가 생겨."));
+      return;
+    }
+
+    entries.forEach((entry, index) => {
+      leaderboardListEl.append(createRankItem(entry, index, true));
+    });
+  }
+
+  function createEmptyRankItem(message) {
+    const empty = document.createElement("li");
+    empty.className = "empty-ranking";
+    empty.textContent = message;
+    return empty;
+  }
+
+  function createRankItem(entry, index, includeMeta) {
+    const item = document.createElement("li");
+
+    const rank = document.createElement("span");
+    rank.className = "rank-number";
+    rank.textContent = (index + 1).toString();
+
+    const name = document.createElement("span");
+    name.className = "rank-name";
+    name.textContent = entry.name;
+
+    const score = document.createElement("span");
+    score.className = "rank-score";
+    score.textContent = entry.score.toLocaleString();
+
+    item.append(rank, name, score);
+
+    if (includeMeta) {
+      const meta = document.createElement("span");
+      meta.className = "rank-meta";
+      meta.textContent = `최대 ${entry.maxTile.toLocaleString()} · ${formatDuration(entry.durationMs)} · ${formatDate(entry.createdAt)}`;
+      item.append(meta);
+    }
+
+    return item;
+  }
+
+  function openLeaderboard() {
+    fetchLeaderboard();
+    renderLeaderboardList();
+    leaderboardModal.classList.remove("is-hidden");
+    leaderboardCloseButton.focus();
+  }
+
+  function closeLeaderboard() {
+    leaderboardModal.classList.add("is-hidden");
+    boardEl.focus({ preventScroll: true });
+  }
+
+  function formatDuration(ms) {
+    const totalSeconds = Math.max(0, Math.round(ms / 1000));
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  }
+
+  function formatDate(value) {
+    return new Intl.DateTimeFormat("ko-KR", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(value));
   }
 
   function directionFromKey(key) {
@@ -382,6 +631,11 @@
   }
 
   window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !leaderboardModal.classList.contains("is-hidden")) {
+      closeLeaderboard();
+      return;
+    }
+
     const direction = directionFromKey(event.key);
     if (direction) {
       event.preventDefault();
@@ -429,6 +683,14 @@
   overlayNewButton.addEventListener("click", startGame);
   keepGoingButton.addEventListener("click", continueAfterWin);
   undoButton.addEventListener("click", undo);
+  scoreForm.addEventListener("submit", submitScore);
+  leaderboardButton.addEventListener("click", openLeaderboard);
+  leaderboardCloseButton.addEventListener("click", closeLeaderboard);
+  leaderboardModal.addEventListener("click", (event) => {
+    if (event.target === leaderboardModal) {
+      closeLeaderboard();
+    }
+  });
   document.querySelectorAll("[data-direction]").forEach((button) => {
     button.addEventListener("click", () => {
       move(button.dataset.direction);
@@ -443,4 +705,5 @@
   });
 
   startGame();
+  fetchLeaderboard();
 })();

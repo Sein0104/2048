@@ -91,7 +91,8 @@ h1 {
 }
 
 .score-card,
-.target-card {
+.target-card,
+.leaderboard-card {
   min-width: 92px;
   padding: 10px 12px;
   border: 1px solid var(--line);
@@ -100,7 +101,8 @@ h1 {
 }
 
 .score-card span,
-.target-card span {
+.target-card span,
+.leaderboard-card span {
   display: block;
   color: var(--muted);
   font-size: 0.77rem;
@@ -252,6 +254,92 @@ h1 {
   color: var(--accent-strong);
 }
 
+.leaderboard-card {
+  display: grid;
+  gap: 10px;
+}
+
+.leaderboard-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.leaderboard-card-header button {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 8px;
+  color: #fff;
+  background: #22352f;
+  font-weight: 900;
+}
+
+.leaderboard-preview,
+.leaderboard-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.leaderboard-preview {
+  display: grid;
+  gap: 7px;
+}
+
+.leaderboard-preview li,
+.leaderboard-list li {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.leaderboard-preview li {
+  min-height: 30px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.rank-number {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: var(--accent);
+  font-weight: 950;
+}
+
+.rank-name {
+  overflow: hidden;
+  color: var(--ink);
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rank-score {
+  color: var(--accent-strong);
+  font-weight: 950;
+}
+
+.empty-ranking {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.leaderboard-preview li.empty-ranking,
+.leaderboard-list li.empty-ranking {
+  display: block;
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  line-height: 1.45;
+}
+
 .button-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(48px, 1fr));
@@ -369,6 +457,63 @@ h1 {
   line-height: 0.95;
 }
 
+.score-form {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+  text-align: left;
+}
+
+.score-form[hidden] {
+  display: none;
+}
+
+.score-form label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 950;
+}
+
+.score-submit-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.score-submit-row input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 12px;
+  color: var(--ink);
+  background: #fff;
+  font: inherit;
+  font-weight: 800;
+}
+
+.score-submit-row input:focus {
+  border-color: var(--accent);
+  outline: 3px solid rgba(231, 93, 79, 0.18);
+}
+
+.score-submit-row button {
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 8px;
+  color: #fff;
+  background: #22352f;
+  font-weight: 900;
+}
+
+.score-save-message {
+  min-height: 20px;
+  margin-bottom: 12px;
+  color: var(--accent-strong);
+  font-size: 0.88rem;
+  font-weight: 900;
+}
+
 .overlay-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -386,6 +531,75 @@ h1 {
 .overlay-actions button:first-child {
   color: var(--ink);
   background: #e4ebe4;
+}
+
+.modal {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  border-radius: 8px;
+  background: rgba(24, 36, 31, 0.72);
+}
+
+.modal.is-hidden {
+  display: none;
+}
+
+.modal-panel {
+  width: min(100%, 390px);
+  max-height: min(92%, 560px);
+  overflow: auto;
+  padding: 18px;
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
+}
+
+.modal-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.modal-header h2 {
+  margin-bottom: 0;
+  font-size: 2.2rem;
+  line-height: 0.95;
+}
+
+.modal-header button {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  color: #fff;
+  background: #22352f;
+  font-size: 1.4rem;
+  font-weight: 950;
+}
+
+.leaderboard-list {
+  display: grid;
+  gap: 9px;
+}
+
+.leaderboard-list li {
+  min-height: 48px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.rank-meta {
+  grid-column: 2 / -1;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
 }
 
 @keyframes pop-in {
@@ -462,6 +676,10 @@ h1 {
 
   .target-card {
     min-height: 84px;
+  }
+
+  .leaderboard-card {
+    grid-column: 1 / -1;
   }
 }
 

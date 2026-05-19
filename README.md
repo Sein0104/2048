@@ -15,3 +15,7 @@
 - 화면 버튼: `←`, `→`, `↑`, `↓`
 - `R`: 새 게임
 - `U`: 되돌리기
+
+## 랭킹
+
+게임오버 후 닉네임을 입력하면 Supabase의 `scores` 테이블에 점수가 저장됩니다. 배포 전에 `supabase-scores.sql`을 Supabase SQL Editor에서 실행해야 공용 순위가 동작합니다.

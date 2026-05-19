@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>2048</title>
-    <link rel="stylesheet" href="2048.css" />
+    <link rel="stylesheet" href="2048.css?v=supabase-1" />
   </head>
   <body>
     <main class="app-shell">
@@ -50,10 +50,39 @@
               <div class="overlay-panel">
                 <p id="overlayKicker">완료</p>
                 <h2 id="overlayTitle">2048</h2>
+                <form id="scoreForm" class="score-form" hidden>
+                  <label for="nicknameInput">닉네임</label>
+                  <div class="score-submit-row">
+                    <input
+                      id="nicknameInput"
+                      name="nickname"
+                      type="text"
+                      maxlength="12"
+                      placeholder="이름 입력"
+                      autocomplete="nickname"
+                    />
+                    <button type="submit">등록</button>
+                  </div>
+                </form>
+                <p id="scoreSaveMessage" class="score-save-message" aria-live="polite"></p>
                 <div class="overlay-actions">
                   <button id="keepGoingButton" type="button">계속하기</button>
                   <button id="overlayNewButton" type="button">새 게임</button>
                 </div>
+              </div>
+            </div>
+            <div id="leaderboardModal" class="modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="leaderboardTitle">
+              <div class="modal-panel">
+                <div class="modal-header">
+                  <div>
+                    <p class="eyebrow">Global Ranking</p>
+                    <h2 id="leaderboardTitle">순위</h2>
+                  </div>
+                  <button id="leaderboardCloseButton" type="button" title="닫기" aria-label="닫기">
+                    <span aria-hidden="true">×</span>
+                  </button>
+                </div>
+                <ol id="leaderboardList" class="leaderboard-list"></ol>
               </div>
             </div>
           </div>
@@ -62,6 +91,13 @@
             <div class="target-card">
               <span>목표</span>
               <strong id="targetTile">2048</strong>
+            </div>
+            <div class="leaderboard-card">
+              <div class="leaderboard-card-header">
+                <span>순위</span>
+                <button id="leaderboardButton" type="button">보기</button>
+              </div>
+              <ol id="leaderboardPreview" class="leaderboard-preview"></ol>
             </div>
             <div class="button-grid">
               <button id="newGameButton" type="button" title="새 게임" aria-label="새 게임">
@@ -93,6 +129,6 @@
       </section>
     </main>
 
-    <script src="2048.js"></script>
+    <script src="2048.js?v=supabase-1"></script>
   </body>
 </html>
