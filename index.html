@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>2048</title>
-    <link rel="stylesheet" href="2048.css?v=controls-1" />
+    <link rel="stylesheet" href="2048.css?v=undo-button-1" />
   </head>
   <body>
     <main class="app-shell">
@@ -103,6 +103,9 @@
               <button id="newGameButton" type="button" title="새 게임" aria-label="새 게임">
                 <span aria-hidden="true">↻</span>
               </button>
+              <button id="undoButton" type="button" title="되돌리기" aria-label="되돌리기">
+                <span aria-hidden="true">↶</span>
+              </button>
               <button id="soundButton" type="button" title="소리 끄기" aria-label="소리 끄기">
                 <span aria-hidden="true">♪</span>
               </button>
@@ -126,6 +129,6 @@
       </section>
     </main>
 
-    <script src="2048.js?v=controls-1"></script>
+    <script src="2048.js?v=undo-button-1"></script>
   </body>
 </html>

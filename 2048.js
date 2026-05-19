@@ -7,6 +7,7 @@
   const newGameButton = document.getElementById("newGameButton");
   const overlayNewButton = document.getElementById("overlayNewButton");
   const keepGoingButton = document.getElementById("keepGoingButton");
+  const undoButton = document.getElementById("undoButton");
   const soundButton = document.getElementById("soundButton");
   const overlay = document.getElementById("overlay");
   const overlayKicker = document.getElementById("overlayKicker");
@@ -35,6 +36,7 @@
     grid: createEmptyGrid(),
     score: 0,
     best: Number(localStorage.getItem(BEST_KEY) || 0),
+    previous: null,
     tileId: 1,
     won: false,
     gameOver: false,
@@ -56,9 +58,14 @@
     return Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
   }
 
+  function cloneGrid(grid) {
+    return grid.map((row) => row.map((tile) => (tile ? { ...tile } : null)));
+  }
+
   function startGame() {
     state.grid = createEmptyGrid();
     state.score = 0;
+    state.previous = null;
     state.won = false;
     state.gameOver = false;
     state.keepGoing = false;
@@ -69,6 +76,30 @@
     hideOverlay();
     addRandomTile();
     addRandomTile();
+    render();
+    boardEl.focus({ preventScroll: true });
+  }
+
+  function savePrevious() {
+    state.previous = {
+      grid: cloneGrid(state.grid),
+      score: state.score,
+      won: state.won,
+      gameOver: state.gameOver,
+      keepGoing: state.keepGoing,
+    };
+  }
+
+  function undo() {
+    if (!state.previous || !scoreForm.hidden) return;
+
+    state.grid = cloneGrid(state.previous.grid);
+    state.score = state.previous.score;
+    state.won = state.previous.won;
+    state.gameOver = state.previous.gameOver;
+    state.keepGoing = state.previous.keepGoing;
+    state.previous = null;
+    hideOverlay();
     render();
     boardEl.focus({ preventScroll: true });
   }
@@ -100,6 +131,7 @@
   function move(direction) {
     if (state.gameOver) return;
 
+    savePrevious();
     clearTileFlags();
 
     const result =
@@ -108,6 +140,7 @@
         : moveColumns(direction);
 
     if (!result.changed) {
+      state.previous = null;
       render();
       showBlockedMove();
       return;
@@ -264,6 +297,7 @@
     boardEl.querySelectorAll(".tile").forEach((tile) => tile.remove());
     scoreEl.textContent = state.score.toString();
     bestScoreEl.textContent = state.best.toString();
+    undoButton.disabled = !state.previous;
     targetTileEl.textContent = getTargetTile().toString();
     renderLeaderboardPreview();
 
@@ -660,6 +694,7 @@
   newGameButton.addEventListener("click", startGame);
   overlayNewButton.addEventListener("click", startGame);
   keepGoingButton.addEventListener("click", continueAfterWin);
+  undoButton.addEventListener("click", undo);
   scoreForm.addEventListener("submit", submitScore);
   leaderboardButton.addEventListener("click", openLeaderboard);
   leaderboardCloseButton.addEventListener("click", closeLeaderboard);
